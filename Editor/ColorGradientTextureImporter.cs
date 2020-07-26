@@ -59,6 +59,9 @@ namespace Oddworm.EditorFramework
         [SerializeField]
         Texture2D m_OutputPngFile = null;
 
+        [HideInInspector]
+        [SerializeField] string m_SelfGuid = ""; // the asset guid of this importer
+
         /// <summary>
         /// The gradient orientation in the generated texture.
         /// </summary>
@@ -125,7 +128,24 @@ namespace Oddworm.EditorFramework
             ctx.AddObjectToAsset("MainAsset", texture);
             ctx.SetMainObject(texture);
 
+            DetectDuplicateAsset(ctx);
             ExportToExternal(ctx, texture);
+        }
+
+        // If the asset gets duplicated, reset some fields that are unique to THIS asset only.
+        void DetectDuplicateAsset(AssetImportContext ctx)
+        {
+            var guid = AssetDatabase.AssetPathToGUID(ctx.assetPath);
+
+            // If the m_SelfGuid field contains a value already, but it's different from this importer guid,
+            // it means the asset got duplicated. In this case, reset some fields.
+            if (!string.IsNullOrEmpty(m_SelfGuid) && !string.Equals(guid, m_SelfGuid, System.StringComparison.OrdinalIgnoreCase))
+            {
+                m_GeneratePng = false;
+                m_OutputPngFile = null;
+            }
+
+            m_SelfGuid = guid;
         }
 
         Texture2D CreateHorizontal(AssetImportContext ctx)
