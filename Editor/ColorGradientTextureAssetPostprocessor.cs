@@ -5,7 +5,6 @@
 #pragma warning disable IDE1006, IDE0017
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.Experimental.AssetImporters;
 using System.IO;
 using System.Collections.Generic;
 using System;
