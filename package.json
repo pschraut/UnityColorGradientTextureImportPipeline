@@ -1,0 +1,25 @@
+{
+  "name": "com.oddworm.colorgradienttextureimportpipeline",
+  "version": "1.0.0",
+  "displayName": "Color Gradient Texture Import Pipeline",
+  "description": "Color Gradient Texture Import Pipeline allows you to generate gradient textures directly inside Unity.",
+  "unity": "2019.3",
+  "documentationUrl": "https://github.com/pschraut/UnityColorGradientTextureImportPipeline",
+  "dependencies": {
+  },
+  "keywords": [
+    "unity",
+    "texture",
+    "gradient",
+    "importer",
+    "editor"
+  ],
+  "author": {
+    "name": "Peter Schraut",
+    "url": "http://console-dev.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pschraut/UnityColorGradientTextureImportPipeline.git"
+  }
+}
