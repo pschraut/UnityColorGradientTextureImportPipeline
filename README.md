@@ -24,4 +24,4 @@ Something like "Color Gradient Texture Import Pipeline by Peter Schraut" or "Tha
 
 # Contact
 
-Please use the Unity forum thread I created for this package: add URL
+Please use the Unity forum thread I created for this package: https://forum.unity.com/threads/color-gradient-texture-import-pipeline.1372641/
