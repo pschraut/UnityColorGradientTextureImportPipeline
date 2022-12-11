@@ -1,5 +1,5 @@
 ﻿//
-// Color Gradient Texture Importer for Unity. Copyright (c) 2020 Peter Schraut (www.console-dev.de). See LICENSE.md
+// Color Gradient Texture Importer for Unity. Copyright (c) 2020-2022 Peter Schraut (www.console-dev.de). See LICENSE.md
 // https://github.com/pschraut/UnityColorGradientTextureImportPipeline
 //
 #pragma warning disable IDE1006, IDE0017
@@ -29,13 +29,15 @@ namespace Oddworm.EditorFramework
         [SerializeField]
         Orientation m_Orientation = Orientation.Horizontal;
 
-        [Tooltip("The number of steps, or texels, that are generated for a gradient.")]
+        [Tooltip("The gradient width.\n\nThe option depends on the orientation, it's the width in Horizontal orientation, otherwise the height.")]
+        [UnityEngine.Serialization.FormerlySerializedAs("m_Steps")]
         [SerializeField]
-        int m_Steps = 256;
+        int m_Width = 256;
 
-        [Tooltip("The width or height, depending on orientation, of a single gradient.")]
+        [Tooltip("The height of a single gradient.\n\nThe option depends on the orientation, it's the height in Horizontal orientation, otherwise the width.")]
+        [UnityEngine.Serialization.FormerlySerializedAs("m_Thickness")]
         [SerializeField]
-        int m_Thickness = 4;
+        int m_Height = 4;
 
         [Tooltip("Reverse or flip the gradient.")]
         [SerializeField]
@@ -56,13 +58,9 @@ namespace Oddworm.EditorFramework
         int m_AnisoLevel = 1;
 
         [Space]
-        [Tooltip("Selects whether you want the color gradient asset to be saved as PNG image file.")]
+        [Tooltip("(optional) If an output texture is specified, the generated gradient is written to the specified texture file as well.")]
         [SerializeField]
-        bool m_GeneratePng = false;
-
-        [Tooltip("Selects where the color gradient texture is saved to.")]
-        [SerializeField]
-        Texture2D m_OutputPngFile = null;
+        Texture2D m_OutputTexture = null;
 
         [HideInInspector]
         [SerializeField] string m_SelfGuid = ""; // the asset guid of this importer
@@ -81,8 +79,8 @@ namespace Oddworm.EditorFramework
         /// </summary>
         public TextureWrapMode wrapMode
         {
-            get { return m_WrapMode; }
-            set { m_WrapMode = value; }
+            get => m_WrapMode;
+            set => m_WrapMode = value;
         }
 
         /// <summary>
@@ -90,8 +88,8 @@ namespace Oddworm.EditorFramework
         /// </summary>
         public FilterMode filterMode
         {
-            get { return m_FilterMode; }
-            set { m_FilterMode = value; }
+            get => m_FilterMode;
+            set => m_FilterMode = value;
         }
 
         /// <summary>
@@ -99,8 +97,8 @@ namespace Oddworm.EditorFramework
         /// </summary>
         public int anisoLevel
         {
-            get { return m_AnisoLevel; }
-            set { m_AnisoLevel = value; }
+            get => m_AnisoLevel;
+            set => m_AnisoLevel = value;
         }
 
         /// <summary>
@@ -108,16 +106,25 @@ namespace Oddworm.EditorFramework
         /// </summary>
         public Gradient[] gradients
         {
-            get { return m_Gradients.ToArray(); }
-            set { m_Gradients = new List<Gradient>(value); }
+            get => m_Gradients.ToArray();
+            set => m_Gradients = new List<Gradient>(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the output texture.
+        /// </summary>
+        public Texture2D outputTexture
+        {
+            get => m_OutputTexture;
+            set => m_OutputTexture = value;
         }
 
         public const string kFileExtension = "colorgradienttexture";
 
         void OnValidate()
         {
-            m_Steps = Mathf.Clamp(m_Steps, 2, 1024 * 16);
-            m_Thickness = Mathf.Clamp(m_Thickness, 1, 1024 * 16);
+            m_Width = Mathf.Clamp(m_Width, 2, 1024 * 16);
+            m_Height = Mathf.Clamp(m_Height, 1, 1024 * 16);
         }
 
         public override void OnImportAsset(AssetImportContext ctx)
@@ -146,8 +153,7 @@ namespace Oddworm.EditorFramework
             // it means the asset got duplicated. In this case, reset some fields.
             if (!string.IsNullOrEmpty(m_SelfGuid) && !string.Equals(guid, m_SelfGuid, System.StringComparison.OrdinalIgnoreCase))
             {
-                m_GeneratePng = false;
-                m_OutputPngFile = null;
+                m_OutputTexture = null;
             }
 
             m_SelfGuid = guid;
@@ -156,8 +162,8 @@ namespace Oddworm.EditorFramework
         Texture2D CreateHorizontal(AssetImportContext ctx)
         {
             var gradients = GetGradientsSafe();
-            var width = m_Steps;
-            var height = m_Thickness * gradients.Count;
+            var width = m_Width;
+            var height = m_Height * gradients.Count;
             var texture = CreateTexture(width, height);
             var pixels = texture.GetPixels32();
             var line = 0;
@@ -174,11 +180,11 @@ namespace Oddworm.EditorFramework
 
                     var value = (Color32)gradient.Evaluate(time);
 
-                    for (var y = line; y < line + m_Thickness; ++y)
+                    for (var y = line; y < line + m_Height; ++y)
                         pixels[x + y * width] = value;
                 }
 
-                line += m_Thickness;
+                line += m_Height;
             }
 
             texture.SetPixels32(pixels);
@@ -190,8 +196,8 @@ namespace Oddworm.EditorFramework
         Texture2D CreateVertical(AssetImportContext ctx)
         {
             var gradients = GetGradientsSafe();
-            var width = m_Thickness * gradients.Count;
-            var height = m_Steps;
+            var width = m_Height * gradients.Count;
+            var height = m_Width;
             var texture = CreateTexture(width, height);
             var pixels = texture.GetPixels32();
             var line = 0;
@@ -208,11 +214,11 @@ namespace Oddworm.EditorFramework
 
                     var value = (Color32)gradient.Evaluate(time);
 
-                    for (var x = line; x < line + m_Thickness; ++x)
+                    for (var x = line; x < line + m_Height; ++x)
                         pixels[x + y * width] = value;
                 }
 
-                line += m_Thickness;
+                line += m_Height;
             }
 
             texture.SetPixels32(pixels);
@@ -223,13 +229,13 @@ namespace Oddworm.EditorFramework
 
         void ExportToExternal(AssetImportContext ctx, Texture2D texture)
         {
-            if (!m_GeneratePng)
+            if (m_OutputTexture == null)
                 return;
 
-            var outputPath = AssetDatabase.GetAssetPath(m_OutputPngFile);
+            var outputPath = AssetDatabase.GetAssetPath(m_OutputTexture);
             if (string.IsNullOrEmpty(outputPath))
             {
-                ctx.LogImportError(string.Format("Cannot export color gradient texture, because no output texture has been specified."), ctx.mainObject);
+                ctx.LogImportError("Cannot export color gradient texture, because the output texture path could not be found.", ctx.mainObject);
                 return;
             }
 
@@ -238,10 +244,10 @@ namespace Oddworm.EditorFramework
             {
                 case ".png": File.WriteAllBytes(outputPath, texture.EncodeToPNG()); break;
                 case ".tga": File.WriteAllBytes(outputPath, texture.EncodeToTGA()); break;
-                case ".jpg": File.WriteAllBytes(outputPath, texture.EncodeToJPG()); break;
-                case ".exr": File.WriteAllBytes(outputPath, texture.EncodeToEXR()); break;
+                //case ".jpg": File.WriteAllBytes(outputPath, texture.EncodeToJPG()); break;
+                //case ".exr": File.WriteAllBytes(outputPath, texture.EncodeToEXR()); break;
                 default:
-                    ctx.LogImportError(string.Format("Cannot export as '{0}' ({1}), Png and Tga exports are supported only.", type, outputPath), ctx.mainObject);
+                    ctx.LogImportError($"Cannot export as '{type}' ({outputPath}), .png and .tga exports are supported only.", ctx.mainObject);
                     break;
             }
         }
@@ -305,7 +311,7 @@ namespace Oddworm.EditorFramework
             if (string.IsNullOrEmpty(directoryPath))
                 directoryPath = "Assets/";
 
-            var fileName = string.Format("New Color Gradient Texture.{0}", ColorGradientTextureImporter.kFileExtension);
+            var fileName = $"New Color Gradient Texture.{kFileExtension}";
             directoryPath = AssetDatabase.GenerateUniqueAssetPath(directoryPath + fileName);
 
             ProjectWindowUtil.CreateAssetWithContent(directoryPath, "This file represents a ColorGradient Texture asset for Unity.\nYou need the 'ColorGradient Texture Import Pipeline' package available at https://github.com/pschraut/UnityColorGradientTextureImportPipeline to properly import this file in Unity.");

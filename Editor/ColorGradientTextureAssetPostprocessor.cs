@@ -1,5 +1,5 @@
 ﻿//
-// Color Gradient Texture Importer for Unity. Copyright (c) 2020 Peter Schraut (www.console-dev.de). See LICENSE.md
+// Color Gradient Texture Importer for Unity. Copyright (c) 2020-2022 Peter Schraut (www.console-dev.de). See LICENSE.md
 // https://github.com/pschraut/UnityColorGradientTextureImportPipeline
 //
 #pragma warning disable IDE1006, IDE0017
